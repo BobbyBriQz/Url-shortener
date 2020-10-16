@@ -3,6 +3,7 @@ package cc.lnkd.urlshortener.validations;
 import cc.lnkd.urlshortener.exceptions.BadRequestException;
 import cc.lnkd.urlshortener.models.LinkRequest;
 
+
 public class RequestValidator {
 
     public static void validateLinkRequest(LinkRequest request) throws BadRequestException {

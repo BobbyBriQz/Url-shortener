@@ -6,6 +6,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
+import java.sql.SQLIntegrityConstraintViolationException;
+
 @ControllerAdvice
 public class GeneralExceptionsHandler {
 
@@ -19,6 +21,12 @@ public class GeneralExceptionsHandler {
     }
 
 
+    @ExceptionHandler(SQLIntegrityConstraintViolationException.class)
+    public void sqlExceptionHandler(Exception ex) {
+        System.out.println(ex.getMessage());
+        //Catch SQL Insert Constraints and do nothing
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<APIResponse> exceptionHandler(Exception ex) {
         APIResponse error = new APIResponse();
@@ -27,6 +35,5 @@ public class GeneralExceptionsHandler {
         error.setMessage(ex.getMessage());
         error.setData(null);
         return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
-
     }
 }
