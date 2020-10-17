@@ -19,6 +19,7 @@ public class BadRequestException extends  IOException {
     }
 
     public BadRequestException(boolean status, String message, Object data) {
+        super(message);
         this.status = status;
         this.message = message;
         this.data = data;

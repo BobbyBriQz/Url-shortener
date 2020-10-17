@@ -19,7 +19,41 @@ public class LinkServiceImpl implements LinkService {
 
     @Override
     public LinkResponse writeURLToDBForPaid(LinkRequest request) throws SQLException, BadRequestException {
-        return null;
+        LinkRepository repo = new LinkRepository();
+        int writeIndex = 0;
+        //If slug is not provided
+        if(request.getSlug() == null || request.getSlug().isEmpty()){
+            do{
+                //If slug length is provided
+                if (request.getSlugLength() != 0) {
+                    request.setSlug(generateSlug(request.getSlugLength()));
+                } else {
+                    request.setSlug(generateSlug(4));
+                }
+
+                //This catches the exception thrown when Duplicate entry in db Exception occurs
+                try {
+                    writeIndex = repo.writeURLToDB(request.getUrl(), request.getSlug());
+                }catch (Exception e){
+                    System.out.println(e.getMessage());
+                }
+            }while (writeIndex == 0);
+
+            System.out.println("Slug generated for " +request.getUrl()+ " is " + request.getSlug());
+        }else {
+            //Slug was provided
+
+            try {
+                writeIndex = repo.writeURLToDB(request.getUrl(), request.getSlug());
+            }catch (Exception e){
+                System.out.println(e.getMessage());
+            }
+
+            if(writeIndex == 0){
+                throw new BadRequestException("Custom link has already been taken, please select another");
+            }
+        }
+        return retrieveLinkResponseFromDB(writeIndex);
     }
 
     @Override
@@ -33,7 +67,7 @@ public class LinkServiceImpl implements LinkService {
                 if (request.getSlugLength() != 0) {
                     request.setSlug(generateSlug(request.getSlugLength()));
                 } else {
-                    request.setSlug(generateSlug(5));
+                    request.setSlug(generateSlug(6));
                 }
 
                 //This catches the exception thrown when Duplicate entry in db Exception occurs

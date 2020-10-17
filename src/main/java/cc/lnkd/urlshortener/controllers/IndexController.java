@@ -1,5 +1,10 @@
 package cc.lnkd.urlshortener.controllers;
 
+import cc.lnkd.urlshortener.exceptions.BadRequestException;
+import cc.lnkd.urlshortener.models.LinkResponse;
+import cc.lnkd.urlshortener.services.LinkService;
+import cc.lnkd.urlshortener.validations.RequestValidator;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -8,29 +13,28 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
 import java.net.URI;
+import java.sql.SQLException;
 
 @RestController
 @RequestMapping("/")
 public class IndexController {
 
+    @Autowired
+    LinkService linkService;
+
     @GetMapping("/*")
-    ResponseEntity<String> gotoUrl(HttpServletRequest request){
+    ResponseEntity<String> gotoUrl(HttpServletRequest request) throws SQLException, BadRequestException {
 
-        /*String slug = request.getRequestURI().substring(1);
-        new RequestValidator().validateSlug(slug);
+        String slug = request.getRequestURI().substring(1);
 
-        String urlFromDB = redirectService.retrieveURLFromDB(slug.trim());
-        CreateRequest data = new CreateRequest(slug.trim(), urlFromDB);
-        if(urlFromDB == null){
+        LinkResponse data = linkService.retrieveURLFromDB(slug.trim());
+        if(data == null){
+            //Todo: display beautiful 404 page
+            throw new BadRequestException("Slug does not exist in db");
+        }
 
-            //Todo: Debug why the error message is not showing
-            throw new BadRequestException(false, "Slug does not exist in db", data);
-        }*/
-
-        /*return ResponseEntity.status(HttpStatus.FOUND)
-                .location(URI.create(urlFromDB))
-                .build();*/
-
-        return new ResponseEntity<>(request.getRequestURI().substring(1), HttpStatus.OK);
+        return ResponseEntity.status(HttpStatus.FOUND)
+                .location(URI.create(data.getUrl()))
+                .build();
     }
 }

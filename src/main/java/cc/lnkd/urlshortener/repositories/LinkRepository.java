@@ -31,24 +31,41 @@ public class LinkRepository {
 
 
     public LinkResponse retrieveURLFromDB(String slug) throws SQLException {
-        String selectQuery = "SELECT id, slug, url, visit_count FROM links WHERE `slug` = ?";
 
-        PreparedStatement preparedStatement = connection.prepareStatement(selectQuery);
-        preparedStatement.setString(1, slug);
+        try {
 
-        ResultSet resultSet = preparedStatement.executeQuery();
+            String updateQuery = "UPDATE links set visit_count = visit_count + 1 WHERE `slug` = ?";
 
-        if(resultSet.next()){
-            int linkId = resultSet.getInt("id");
-            String slugCreated = resultSet.getString("slug");
-            String url = resultSet.getString("url");
-            int visitCount = resultSet.getInt("visit_count");
+            PreparedStatement updateStatement = connection.prepareStatement(updateQuery);
+            updateStatement.setString(1, slug);
+            int update = updateStatement.executeUpdate();
 
-            return new LinkResponse(linkId, slugCreated, url, visitCount);
+            String selectQuery = "SELECT id, slug, url, visit_count FROM links WHERE `slug` = ?";
+
+            PreparedStatement preparedStatement = connection.prepareStatement(selectQuery);
+            preparedStatement.setString(1, slug);
+
+            ResultSet resultSet = preparedStatement.executeQuery();
+
+            if (resultSet.next()) {
+                int linkId = resultSet.getInt("id");
+                String slugCreated = resultSet.getString("slug");
+                String url = resultSet.getString("url");
+                int visitCount = resultSet.getInt("visit_count");
+
+                resultSet.close();
+                connection.close();
+                return new LinkResponse(linkId, slugCreated, url, visitCount);
+            }
+
+        }catch (Exception e){
+            System.out.println(e.getMessage());
+        }finally {
+
+            connection.close();
         }
 
-        resultSet.close();
-        connection.close();
+
         return null;
     }
 
@@ -62,10 +79,12 @@ public class LinkRepository {
 
         if(resultSet.next()){
             int linkId = resultSet.getInt("id");
-            String shortUrl = "https://lnkd.cc/" + resultSet.getString("slug");
+            String shortUrl = "lnkd.cc/" + resultSet.getString("slug");
             String url = resultSet.getString("url");
             int visitCount = resultSet.getInt("visit_count");
 
+            resultSet.close();
+            connection.close();
             return new LinkResponse(linkId, shortUrl, url, visitCount);
         }
 
@@ -83,6 +102,8 @@ public class LinkRepository {
         ResultSet resultSet = preparedStatement.executeQuery();
 
         if(resultSet.next()){
+            resultSet.close();
+            connection.close();
             return resultSet.getInt(1);
         }
 
@@ -100,6 +121,9 @@ public class LinkRepository {
         ResultSet resultSet = preparedStatement.executeQuery();
 
         if(resultSet.next()){
+
+            resultSet.close();
+            connection.close();
             return resultSet.getInt(1);
         }
 
