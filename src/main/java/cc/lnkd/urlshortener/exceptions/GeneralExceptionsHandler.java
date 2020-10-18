@@ -13,13 +13,9 @@ public class GeneralExceptionsHandler {
 
     @ExceptionHandler(BadRequestException.class)
     public ResponseEntity<APIResponse> handleOrderBadRequestException(Exception ex) {
-        APIResponse error = new APIResponse();
-        error.setMessage(ex.getMessage());
-        error.setData(null);
-        error.setStatus(false);
+        APIResponse error = new APIResponse(false, ex.getMessage(), null);
         return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
     }
-
 
     @ExceptionHandler(SQLIntegrityConstraintViolationException.class)
     public void sqlExceptionHandler(Exception ex) {
@@ -27,13 +23,17 @@ public class GeneralExceptionsHandler {
         //Catch SQL Insert Constraints and do nothing
     }
 
+    @ExceptionHandler(NullPointerException.class)
+    public ResponseEntity<APIResponse> nullPointerExceptionHandler(Exception ex) {
+        APIResponse error = new APIResponse(false, "Null Pointer Exception", null);
+        ex.printStackTrace();
+        return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<APIResponse> exceptionHandler(Exception ex) {
-        APIResponse error = new APIResponse();
+        APIResponse error = new APIResponse(false, ex.getMessage(), null);
         ex.printStackTrace();
-        error.setStatus(false);
-        error.setMessage(ex.getMessage());
-        error.setData(null);
         return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
     }
 }

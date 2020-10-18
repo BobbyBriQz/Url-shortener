@@ -1,29 +1,22 @@
 package cc.lnkd.urlshortener.repositories;
 
 
+import cc.lnkd.urlshortener.db.DBConfig;
 import cc.lnkd.urlshortener.models.LinkResponse;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.env.Environment;
-import org.springframework.stereotype.Component;
-
+import org.springframework.beans.factory.annotation.Configurable;
 import java.sql.*;
+
 
 public class LinkRepository {
 
     Connection connection;
-    String username;
-    String password;
 
-    @Autowired
-    Environment env;
+    public LinkRepository(DBConfig dbConfig){
 
-    public LinkRepository(){
-
-        username = "root";
-        password = "password";
-
+        //DBConfig is used to get the configuration from the application.properties file
         try {
-            connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/lnkd_db?"+"user="+username+"&password="+password+"&serverTimezone=UTC");
+            connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/lnkd_db?"+"user="+dbConfig.getUsername()+"&password="+dbConfig.getPassword()+"&serverTimezone=UTC");
         }catch (Exception e){
             e.printStackTrace();
         }

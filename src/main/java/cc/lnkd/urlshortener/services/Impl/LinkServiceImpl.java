@@ -1,10 +1,12 @@
 package cc.lnkd.urlshortener.services.Impl;
 
+import cc.lnkd.urlshortener.db.DBConfig;
 import cc.lnkd.urlshortener.exceptions.BadRequestException;
 import cc.lnkd.urlshortener.models.LinkRequest;
 import cc.lnkd.urlshortener.models.LinkResponse;
 import cc.lnkd.urlshortener.repositories.LinkRepository;
 import cc.lnkd.urlshortener.services.LinkService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.sql.SQLException;
@@ -12,14 +14,18 @@ import java.util.Random;
 
 @Service
 public class LinkServiceImpl implements LinkService {
+
+    @Autowired
+    DBConfig dbConfig;
+
     @Override
     public LinkResponse retrieveURLFromDB(String slug) throws SQLException {
-        return new LinkRepository().retrieveURLFromDB(slug);
+        return new LinkRepository(dbConfig).retrieveURLFromDB(slug);
     }
 
     @Override
     public LinkResponse writeURLToDBForPaid(LinkRequest request) throws SQLException, BadRequestException {
-        LinkRepository repo = new LinkRepository();
+        LinkRepository repo = new LinkRepository(dbConfig);
         int writeIndex = 0;
         //If slug is not provided
         if(request.getSlug() == null || request.getSlug().isEmpty()){
@@ -58,7 +64,7 @@ public class LinkServiceImpl implements LinkService {
 
     @Override
     public LinkResponse writeURLToDBForFree(LinkRequest request) throws SQLException, BadRequestException {
-        LinkRepository repo = new LinkRepository();
+        LinkRepository repo = new LinkRepository(dbConfig);
         int writeIndex = 0;
         //If slug is not provided
         if(request.getSlug() == null || request.getSlug().isEmpty()){
@@ -97,7 +103,7 @@ public class LinkServiceImpl implements LinkService {
 
     @Override
     public LinkResponse writeURLToDBForIncognito(LinkRequest request) throws SQLException, BadRequestException {
-        LinkRepository repo = new LinkRepository();
+        LinkRepository repo = new LinkRepository(dbConfig);
         int writeIndex = 0;
         boolean urlExists = checkURLExistenceInDB(request.getUrl());
         if(urlExists){
@@ -120,11 +126,11 @@ public class LinkServiceImpl implements LinkService {
 
 
     LinkResponse retrieveLinkResponseFromDB(int id) throws SQLException{
-        return new LinkRepository().retrieveURLFromDB(id);
+        return new LinkRepository(dbConfig).retrieveURLFromDB(id);
     }
 
     public boolean checkURLExistenceInDB(String url) throws SQLException {
-        int state = new LinkRepository().checkURLExistenceInDB(url);
+        int state = new LinkRepository(dbConfig).checkURLExistenceInDB(url);
         return state != 0;
     }
 
