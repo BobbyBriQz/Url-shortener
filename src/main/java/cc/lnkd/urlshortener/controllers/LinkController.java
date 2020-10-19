@@ -23,7 +23,7 @@ public class LinkController {
     @PostMapping("/create")
     public ResponseEntity<APIResponse> create(@RequestBody LinkRequest request) throws BadRequestException, SQLException {
 
-        RequestValidator.validateLinkRequest(request);
+        RequestValidator.validateCreateLinkRequest(request);
 
         LinkResponse response = linkService.writeURLToDBForFree(request);
 

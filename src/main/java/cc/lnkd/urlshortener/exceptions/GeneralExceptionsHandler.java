@@ -49,7 +49,7 @@ public class GeneralExceptionsHandler {
     @ExceptionHandler(Exception.class)
     public ResponseEntity<APIResponse> exceptionHandler(Exception ex) {
         APIResponse error = new APIResponse(false, ex.getMessage(), null);
-        ex.printStackTrace();
+        System.out.println(ex.getMessage());
         return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
     }
 }

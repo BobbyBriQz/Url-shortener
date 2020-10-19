@@ -168,4 +168,25 @@ public class UserRepository {
         connection.close();
         return null;
     }
+
+    public int doesEmailAlreadyExist(String email) throws SQLException {
+        String selectQuery = "SELECT count(email) as email_count " +
+                "FROM users where `email` = ?";
+        PreparedStatement selectStatement = connection.prepareStatement(selectQuery);
+        selectStatement.setString(1, email);
+
+        ResultSet selectResult = selectStatement.executeQuery();
+
+        if(selectResult.next()){
+            int emailCount = selectResult.getInt("email_count");
+
+            selectStatement.close();
+            connection.close();
+            return emailCount;
+        }
+
+        selectStatement.close();
+        connection.close();
+        return 0;
+    }
 }

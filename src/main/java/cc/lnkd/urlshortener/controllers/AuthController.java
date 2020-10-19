@@ -8,6 +8,7 @@ import cc.lnkd.urlshortener.models.request.LoginRequest;
 import cc.lnkd.urlshortener.models.response.LoginResponse;
 import cc.lnkd.urlshortener.models.response.RegistrationResponse;
 import cc.lnkd.urlshortener.services.UserService;
+import cc.lnkd.urlshortener.validations.RequestValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -26,25 +27,20 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/v1/auth")
 public class AuthController {
 
-    @Autowired
-    UserService userService;
+    @Autowired UserService userService;
 
-    @Autowired
-    PasswordEncoder passwordEncoder;
+    @Autowired PasswordEncoder passwordEncoder;
 
-    @Autowired
-    private AuthenticationManager authenticationManager;
+    @Autowired private AuthenticationManager authenticationManager;
 
-    @Autowired
-    private JwtUtil jwtTokenUtil;
+    @Autowired private JwtUtil jwtTokenUtil;
 
-    @Autowired
-    private UserDetailsService userDetailsService;
+    @Autowired private UserDetailsService userDetailsService;
 
     @PostMapping("/login")
     ResponseEntity<APIResponse> login(@RequestBody LoginRequest request) throws Exception {
 
-        //Todo: do validations
+        RequestValidator.validateAuthRequest(request);
 
         try {
             authenticationManager.authenticate(
@@ -67,7 +63,8 @@ public class AuthController {
 
     @PostMapping("/register")
     ResponseEntity<APIResponse> register(@RequestBody RegistrationRequest request) throws Exception {
-        //Todo: do validation
+
+        RequestValidator.validateAuthRequest(request);
 
         request.setPassword(passwordEncoder.encode(request.getPassword()));
 

@@ -1,6 +1,7 @@
 package cc.lnkd.urlshortener.services.Impl;
 
 import cc.lnkd.urlshortener.db.DBConfig;
+import cc.lnkd.urlshortener.exceptions.BadRequestException;
 import cc.lnkd.urlshortener.models.AuthUser;
 import cc.lnkd.urlshortener.models.RegisteredUser;
 import cc.lnkd.urlshortener.models.request.RegistrationRequest;
@@ -23,7 +24,11 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public RegisteredUser register(RegistrationRequest request) throws SQLException {
+    public RegisteredUser register(RegistrationRequest request) throws SQLException, BadRequestException {
+        if(emailAlreadyExists(request.getEmail())){
+            throw new BadRequestException("Email '" +request.getEmail()+ "' has already been registered");
+        }
+
         return new UserRepository(dbConfig).register(request);
     }
 
@@ -32,6 +37,11 @@ public class UserServiceImpl implements UserService {
         return new UserRepository(dbConfig).getUserWithEmail(email);
     }
 
-    //Todo: Write method to check db for email existence
+
+    public boolean emailAlreadyExists(String email) throws SQLException {
+        int emailCount= new UserRepository(dbConfig).doesEmailAlreadyExist(email);
+
+        return emailCount > 0;
+    }
 
 }
