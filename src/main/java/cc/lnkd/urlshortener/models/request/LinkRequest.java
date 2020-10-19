@@ -1,4 +1,4 @@
-package cc.lnkd.urlshortener.models;
+package cc.lnkd.urlshortener.models.request;
 
 import lombok.Data;
 

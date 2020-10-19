@@ -1,6 +1,6 @@
 package cc.lnkd.urlshortener.exceptions;
 
-import cc.lnkd.urlshortener.models.APIResponse;
+import cc.lnkd.urlshortener.models.response.APIResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -35,14 +35,14 @@ public class GeneralExceptionsHandler {
     @ExceptionHandler(UsernameNotFoundException.class)
     public ResponseEntity<APIResponse> userNameNotFoundExceptionHandler(Exception ex) {
         APIResponse error = new APIResponse(false, ex.getMessage()+ " not registered", null);
-        ex.printStackTrace();
+        System.out.println(ex.getMessage() + " Not Found");
         return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(BadCredentialsException.class)
     public ResponseEntity<APIResponse> badCredentialsExceptionHandler(Exception ex) {
         APIResponse error = new APIResponse(false, ex.getMessage(), null);
-        ex.printStackTrace();
+        System.out.println(ex.getMessage());
         return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
     }
 

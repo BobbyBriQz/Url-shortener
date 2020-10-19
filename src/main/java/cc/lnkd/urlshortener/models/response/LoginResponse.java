@@ -1,5 +1,6 @@
-package cc.lnkd.urlshortener.models;
+package cc.lnkd.urlshortener.models.response;
 
+import cc.lnkd.urlshortener.models.RegisteredUser;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -10,7 +11,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 @NoArgsConstructor
 public class LoginResponse {
 
-    private UserDetails user;
+    private RegisteredUser user;
     private String token;
 }
 

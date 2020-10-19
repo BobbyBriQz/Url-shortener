@@ -2,9 +2,8 @@ package cc.lnkd.urlshortener.repositories;
 
 
 import cc.lnkd.urlshortener.db.DBConfig;
-import cc.lnkd.urlshortener.models.LinkResponse;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Configurable;
+import cc.lnkd.urlshortener.models.response.LinkResponse;
+
 import java.sql.*;
 
 

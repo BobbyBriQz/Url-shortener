@@ -2,8 +2,8 @@ package cc.lnkd.urlshortener.services.Impl;
 
 import cc.lnkd.urlshortener.db.DBConfig;
 import cc.lnkd.urlshortener.exceptions.BadRequestException;
-import cc.lnkd.urlshortener.models.LinkRequest;
-import cc.lnkd.urlshortener.models.LinkResponse;
+import cc.lnkd.urlshortener.models.request.LinkRequest;
+import cc.lnkd.urlshortener.models.response.LinkResponse;
 import cc.lnkd.urlshortener.repositories.LinkRepository;
 import cc.lnkd.urlshortener.services.LinkService;
 import org.springframework.beans.factory.annotation.Autowired;

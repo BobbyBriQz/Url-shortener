@@ -1,21 +1,23 @@
 package cc.lnkd.urlshortener.controllers;
 
-import cc.lnkd.urlshortener.exceptions.BadRequestException;
 import cc.lnkd.urlshortener.jwt.JwtUtil;
-import cc.lnkd.urlshortener.models.APIResponse;
-import cc.lnkd.urlshortener.models.LinkResponse;
-import cc.lnkd.urlshortener.models.LoginRequest;
-import cc.lnkd.urlshortener.models.LoginResponse;
+import cc.lnkd.urlshortener.models.RegisteredUser;
+import cc.lnkd.urlshortener.models.request.RegistrationRequest;
+import cc.lnkd.urlshortener.models.response.APIResponse;
+import cc.lnkd.urlshortener.models.request.LoginRequest;
+import cc.lnkd.urlshortener.models.response.LoginResponse;
+import cc.lnkd.urlshortener.models.response.RegistrationResponse;
 import cc.lnkd.urlshortener.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -28,6 +30,9 @@ public class AuthController {
     UserService userService;
 
     @Autowired
+    PasswordEncoder passwordEncoder;
+
+    @Autowired
     private AuthenticationManager authenticationManager;
 
     @Autowired
@@ -37,7 +42,9 @@ public class AuthController {
     private UserDetailsService userDetailsService;
 
     @PostMapping("/login")
-    ResponseEntity<APIResponse> login(LoginRequest request) throws Exception {
+    ResponseEntity<APIResponse> login(@RequestBody LoginRequest request) throws Exception {
+
+        //Todo: do validations
 
         try {
             authenticationManager.authenticate(
@@ -48,32 +55,32 @@ public class AuthController {
             throw new Exception("Incorrect email or password", e);
         }
 
+        RegisteredUser user = userService.getUserWithEmail(request.getEmail());
+
         final UserDetails userDetails = userDetailsService.loadUserByUsername(request.getEmail());
 
         final String jwt = jwtTokenUtil.generateToken(userDetails);
 
-        return ResponseEntity.ok(new APIResponse(true, "Login Successful", new LoginResponse(userDetails, jwt)));
+        return ResponseEntity.ok(new APIResponse(true, "Login Successful", new LoginResponse(user, jwt)));
 
     }
 
     @PostMapping("/register")
-    ResponseEntity<APIResponse> register(LoginRequest request) throws Exception {
+    ResponseEntity<APIResponse> register(@RequestBody RegistrationRequest request) throws Exception {
+        //Todo: do validation
 
-        try {
-            authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
-            );
-        }
-        catch (BadCredentialsException e) {
-            throw new Exception("Incorrect email or password", e);
+        request.setPassword(passwordEncoder.encode(request.getPassword()));
+
+        RegisteredUser user = userService.register(request);
+        if (user == null){
+            throw new Exception("User could not be created");
         }
 
         final UserDetails userDetails = userDetailsService.loadUserByUsername(request.getEmail());
 
         final String jwt = jwtTokenUtil.generateToken(userDetails);
 
-        return ResponseEntity.ok(new APIResponse(true, "Login Successful", new LoginResponse(userDetails, jwt)));
-
+        return ResponseEntity.ok(new APIResponse(true, "User Registered Successfully", new RegistrationResponse(user, jwt)));
     }
 
 

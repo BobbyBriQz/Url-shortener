@@ -1,9 +1,9 @@
 package cc.lnkd.urlshortener.controllers;
 
 import cc.lnkd.urlshortener.exceptions.BadRequestException;
-import cc.lnkd.urlshortener.models.APIResponse;
-import cc.lnkd.urlshortener.models.LinkRequest;
-import cc.lnkd.urlshortener.models.LinkResponse;
+import cc.lnkd.urlshortener.models.response.APIResponse;
+import cc.lnkd.urlshortener.models.request.LinkRequest;
+import cc.lnkd.urlshortener.models.response.LinkResponse;
 import cc.lnkd.urlshortener.services.LinkService;
 import cc.lnkd.urlshortener.validations.RequestValidator;
 import org.springframework.beans.factory.annotation.Autowired;

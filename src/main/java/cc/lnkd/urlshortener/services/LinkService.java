@@ -1,8 +1,8 @@
 package cc.lnkd.urlshortener.services;
 
 import cc.lnkd.urlshortener.exceptions.BadRequestException;
-import cc.lnkd.urlshortener.models.LinkRequest;
-import cc.lnkd.urlshortener.models.LinkResponse;
+import cc.lnkd.urlshortener.models.request.LinkRequest;
+import cc.lnkd.urlshortener.models.response.LinkResponse;
 
 import java.sql.SQLException;
 

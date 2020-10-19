@@ -2,7 +2,10 @@ package cc.lnkd.urlshortener.repositories;
 
 import cc.lnkd.urlshortener.db.DBConfig;
 import cc.lnkd.urlshortener.models.AuthUser;
-import cc.lnkd.urlshortener.models.LinkResponse;
+import cc.lnkd.urlshortener.models.RegisteredUser;
+import cc.lnkd.urlshortener.models.request.RegistrationRequest;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -43,7 +46,7 @@ public class UserRepository {
             List<String> roles = new ArrayList<>();
 
             while (roleResult.next()){
-                roles.add(roleResult.getString("role"));
+                roles.add(roleResult.getString("authority"));
             }
 
             AuthUser authUser = AuthUser.builder()
@@ -54,11 +57,114 @@ public class UserRepository {
                     .build();
 
             resultSet.close();
+            roleResult.close();
             connection.close();
             return authUser;
         }
 
         resultSet.close();
+        connection.close();
+        return null;
+    }
+
+    public RegisteredUser register(RegistrationRequest request) throws SQLException {
+
+        String insertQuery = "INSERT INTO users(first_name, last_name, email, password) " +
+                "values(?,?,?,?)";
+
+        PreparedStatement preparedStatement = connection.prepareStatement(insertQuery, Statement.RETURN_GENERATED_KEYS);
+
+        preparedStatement.setString(1, request.getFirstName());
+        preparedStatement.setString(2, request.getLastName());
+        preparedStatement.setString(3, request.getEmail());
+        preparedStatement.setString(4, request.getPassword()); //Make Sure it is the same strength as the password Encoder bean
+
+        int id = preparedStatement.executeUpdate();
+
+        String roleInsert = "INSERT INTO authorities(email, authority) " +
+                "values(?,?)";
+
+        PreparedStatement roleStatement = connection.prepareStatement(roleInsert);
+        roleStatement.setString(1, request.getEmail());
+        roleStatement.setString(2, "ROLE_FREE");
+        roleStatement.executeUpdate();
+
+        if (id != 0){
+
+            String selectQuery = "SELECT id, email, first_name, last_name, created_at, verified_at, enabled " +
+                    "FROM users where `id` = ?";
+            PreparedStatement selectStatement = connection.prepareStatement(selectQuery);
+            selectStatement.setInt(1, id);
+
+            ResultSet selectResult = selectStatement.executeQuery();
+
+            if(selectResult.next()){
+                int userId = selectResult.getInt("id");
+                String email = selectResult.getString("email");
+                String firstName = selectResult.getString("first_name");
+                String lastName = selectResult.getString("last_name");
+                String createdAt = selectResult.getString("created_at");;
+                String verifiedAt = selectResult.getString("verified_at");
+                boolean isEnabled = selectResult.getBoolean("enabled");
+
+                RegisteredUser user = RegisteredUser.builder()
+                        .id(userId)
+                        .email(email)
+                        .firstName(firstName)
+                        .lastName(lastName)
+                        .createdAt(createdAt)
+                        .verifiedAt(verifiedAt)
+                        .isEnabled(isEnabled)
+                        .build();
+
+                selectStatement.close();
+                roleStatement.close();
+                preparedStatement.close();
+                connection.close();
+                return user;
+            }
+        }
+
+
+        roleStatement.close();
+        preparedStatement.close();
+        connection.close();
+        return null;
+    }
+
+    public RegisteredUser getUserWithEmail(String email) throws SQLException {
+        String selectQuery = "SELECT id, email, first_name, last_name, created_at, verified_at, enabled " +
+                "FROM users where `email` = ?";
+        PreparedStatement selectStatement = connection.prepareStatement(selectQuery);
+        selectStatement.setString(1, email);
+
+        ResultSet selectResult = selectStatement.executeQuery();
+
+        if(selectResult.next()){
+            int userId = selectResult.getInt("id");
+            String userEmail = selectResult.getString("email");
+            String firstName = selectResult.getString("first_name");
+            String lastName = selectResult.getString("last_name");
+            String createdAt = selectResult.getString("created_at");;
+            String verifiedAt = selectResult.getString("verified_at");
+            boolean isEnabled = selectResult.getBoolean("enabled");
+
+            RegisteredUser user = RegisteredUser.builder()
+                    .id(userId)
+                    .email(email)
+                    .firstName(firstName)
+                    .lastName(lastName)
+                    .createdAt(createdAt)
+                    .verifiedAt(verifiedAt)
+                    .isEnabled(isEnabled)
+                    .build();
+
+            selectStatement.close();
+            connection.close();
+            return user;
+        }
+
+        selectStatement.close();
         connection.close();
         return null;
     }
