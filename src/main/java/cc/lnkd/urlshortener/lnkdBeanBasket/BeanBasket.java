@@ -1,6 +1,7 @@
 package cc.lnkd.urlshortener.lnkdBeanBasket;
 
 import cc.lnkd.urlshortener.db.DBConfig;
+import cc.lnkd.urlshortener.jwt.JwtConfig;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -18,6 +19,11 @@ public class BeanBasket {
     @Bean
     public DBConfig getDBConfig(){
         return new DBConfig();
+    }
+
+    @Bean
+    public JwtConfig getJwtConfig(){
+        return new JwtConfig();
     }
 
     @Bean

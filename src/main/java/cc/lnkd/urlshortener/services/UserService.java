@@ -13,5 +13,4 @@ public interface UserService {
     RegisteredUser register(RegistrationRequest registrationRequest) throws SQLException, BadRequestException;
     RegisteredUser getUserWithEmail(String email) throws SQLException;
 
-    //Todo: Write method to check db for email existence
 }
