@@ -25,7 +25,7 @@ public class UserRepository {
     }
 
     public AuthUser getAuthUserByEmail(String email) throws SQLException {
-        String selectQuery = "SELECT email, password, enabled FROM users WHERE `email` = ?";
+        String selectQuery = "SELECT id, email, password, enabled FROM users WHERE `email` = ?";
 
         PreparedStatement preparedStatement = connection.prepareStatement(selectQuery);
         preparedStatement.setString(1, email);
@@ -40,6 +40,7 @@ public class UserRepository {
 
             ResultSet roleResult = roleStatement.executeQuery();
 
+            int userId = resultSet.getInt("id");
             String userEmail = resultSet.getString("email");
             String password = resultSet.getString("password");
             boolean enabled = resultSet.getBoolean("enabled");
@@ -50,6 +51,7 @@ public class UserRepository {
             }
 
             AuthUser authUser = AuthUser.builder()
+                    .userId(userId)
                     .email(userEmail)
                     .password(password)
                     .isEnabled(enabled)

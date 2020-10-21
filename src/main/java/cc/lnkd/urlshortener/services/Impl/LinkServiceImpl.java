@@ -2,6 +2,7 @@ package cc.lnkd.urlshortener.services.Impl;
 
 import cc.lnkd.urlshortener.db.DBConfig;
 import cc.lnkd.urlshortener.exceptions.BadRequestException;
+import cc.lnkd.urlshortener.jwt.JwtUtil;
 import cc.lnkd.urlshortener.models.request.LinkRequest;
 import cc.lnkd.urlshortener.models.response.LinkResponse;
 import cc.lnkd.urlshortener.repositories.LinkRepository;
@@ -9,14 +10,19 @@ import cc.lnkd.urlshortener.services.LinkService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.servlet.http.HttpServletRequest;
 import java.sql.SQLException;
 import java.util.Random;
 
 @Service
 public class LinkServiceImpl implements LinkService {
 
+    //Todo: Write user_id on link creation
+
     @Autowired
     DBConfig dbConfig;
+
+    @Autowired private JwtUtil jwtTokenUtil;
 
     @Override
     public LinkResponse retrieveURLFromDB(String slug) throws SQLException {
@@ -24,33 +30,44 @@ public class LinkServiceImpl implements LinkService {
     }
 
     @Override
-    public LinkResponse writeURLToDBForPaid(LinkRequest request) throws SQLException, BadRequestException {
-        LinkRepository repo = new LinkRepository(dbConfig);
+    public LinkResponse writeURLToDBForPaid(LinkRequest requestBody, HttpServletRequest request) throws SQLException, BadRequestException {
         int writeIndex = 0;
+
+        int userId = getUserIdFromRequestJwt(request);
+
         //If slug is not provided
-        if(request.getSlug() == null || request.getSlug().isEmpty()){
+        if(requestBody.getSlug() == null || requestBody.getSlug().isEmpty()){
             do{
                 //If slug length is provided
-                if (request.getSlugLength() != 0) {
-                    request.setSlug(generateSlug(request.getSlugLength()));
+                if (requestBody.getSlugLength() != 0) {
+                    requestBody.setSlug(generateSlug(requestBody.getSlugLength()));
                 } else {
-                    request.setSlug(generateSlug(4));
+                    requestBody.setSlug(generateSlug(4));
                 }
 
                 //This catches the exception thrown when Duplicate entry in db Exception occurs
                 try {
-                    writeIndex = repo.writeURLToDB(request.getUrl(), request.getSlug());
+                    if(userId == 0) {
+                        //UserId could not be gotten from JWT
+                        writeIndex = new LinkRepository(dbConfig).writeURLToDB(requestBody.getUrl(), requestBody.getSlug());
+                    }else{
+                        writeIndex = new LinkRepository(dbConfig).writeURLToDB(requestBody.getUrl(), requestBody.getSlug(), userId);
+                    }
                 }catch (Exception e){
                     System.out.println(e.getMessage());
                 }
             }while (writeIndex == 0);
 
-            System.out.println("Slug generated for " +request.getUrl()+ " is " + request.getSlug());
+            System.out.println("Slug generated for " +requestBody.getUrl()+ " is " + requestBody.getSlug());
         }else {
             //Slug was provided
 
             try {
-                writeIndex = repo.writeURLToDB(request.getUrl(), request.getSlug());
+                if(userId == 0) {
+                    writeIndex = new LinkRepository(dbConfig).writeURLToDB(requestBody.getUrl(), requestBody.getSlug());
+                }else {
+                    writeIndex = new LinkRepository(dbConfig).writeURLToDB(requestBody.getUrl(), requestBody.getSlug(), userId);
+                }
             }catch (Exception e){
                 System.out.println(e.getMessage());
             }
@@ -63,33 +80,45 @@ public class LinkServiceImpl implements LinkService {
     }
 
     @Override
-    public LinkResponse writeURLToDBForFree(LinkRequest request) throws SQLException, BadRequestException {
-        LinkRepository repo = new LinkRepository(dbConfig);
+    public LinkResponse writeURLToDBForFree(LinkRequest requestBody, HttpServletRequest request) throws SQLException, BadRequestException {
+
         int writeIndex = 0;
+        int userId = getUserIdFromRequestJwt(request);
         //If slug is not provided
-        if(request.getSlug() == null || request.getSlug().isEmpty()){
+        if(requestBody.getSlug() == null || requestBody.getSlug().isEmpty()){
             do{
                 //If slug length is provided
-                if (request.getSlugLength() != 0) {
-                    request.setSlug(generateSlug(request.getSlugLength()));
+                if (requestBody.getSlugLength() != 0) {
+                    requestBody.setSlug(generateSlug(requestBody.getSlugLength()));
                 } else {
-                    request.setSlug(generateSlug(6));
+                    requestBody.setSlug(generateSlug(6));
                 }
 
                 //This catches the exception thrown when Duplicate entry in db Exception occurs
                 try {
-                    writeIndex = repo.writeURLToDB(request.getUrl(), request.getSlug());
+                    if(userId == 0) {
+                        writeIndex = new LinkRepository(dbConfig).writeURLToDB(requestBody.getUrl(), requestBody.getSlug());
+                    }else {
+                        writeIndex = new LinkRepository(dbConfig).writeURLToDB(requestBody.getUrl(), requestBody.getSlug(), userId);
+                    }
                 }catch (Exception e){
                     System.out.println(e.getMessage());
                 }
             }while (writeIndex == 0);
 
-            System.out.println("Slug generated for " +request.getUrl()+ " is " + request.getSlug());
+            System.out.println("Slug generated for " +requestBody.getUrl()+ " is " + requestBody.getSlug());
         }else {
             //Slug was provided
+            if (requestBody.getSlug().length() < 5){
+                throw new BadRequestException("Free Users can't create slugs of less than 5 characters");
+            }
 
             try {
-                writeIndex = repo.writeURLToDB(request.getUrl(), request.getSlug());
+                if(userId == 0) {
+                    writeIndex = new LinkRepository(dbConfig).writeURLToDB(requestBody.getUrl(), requestBody.getSlug());
+                }else {
+                    writeIndex = new LinkRepository(dbConfig).writeURLToDB(requestBody.getUrl(), requestBody.getSlug(), userId);
+                }
             }catch (Exception e){
                 System.out.println(e.getMessage());
             }
@@ -103,7 +132,7 @@ public class LinkServiceImpl implements LinkService {
 
     @Override
     public LinkResponse writeURLToDBForIncognito(LinkRequest request) throws SQLException, BadRequestException {
-        LinkRepository repo = new LinkRepository(dbConfig);
+
         int writeIndex = 0;
         boolean urlExists = checkURLExistenceInDB(request.getUrl());
         if(urlExists){
@@ -111,9 +140,9 @@ public class LinkServiceImpl implements LinkService {
         }
 
        do{
-            //This catches the exception thrown when Duplicate entry in db Exception occurs
+            //This catches the exception thrown when Duplicate slug entry in db Exception occurs
             try {
-                writeIndex = repo.writeURLToDB(request.getUrl(), generateSlug(8));
+                writeIndex = new LinkRepository(dbConfig).writeURLToDB(request.getUrl(), generateSlug(8));
             }catch (Exception e){
                 System.out.println(e.getMessage());
             }
@@ -131,7 +160,19 @@ public class LinkServiceImpl implements LinkService {
 
     public boolean checkURLExistenceInDB(String url) throws SQLException {
         int state = new LinkRepository(dbConfig).checkURLExistenceInDB(url);
-        return state != 0;
+        return state > 0;
+    }
+
+    public int getUserIdFromRequestJwt(HttpServletRequest request){
+        int userId = 0;
+        final String authorizationHeader = request.getHeader("Authorization");
+        String jwt = null;
+        if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
+            jwt = authorizationHeader.substring(7);
+            userId =  jwtTokenUtil.extractUserId(jwt);
+            System.out.println("Extracted userId is: " + userId);
+        }
+        return userId;
     }
 
 

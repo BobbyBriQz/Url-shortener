@@ -2,7 +2,6 @@ package cc.lnkd.urlshortener.models;
 
 import lombok.Builder;
 import lombok.Data;
-import org.springframework.security.core.GrantedAuthority;
 
 import java.util.List;
 
@@ -10,6 +9,7 @@ import java.util.List;
 @Builder
 public class AuthUser {
 
+    private int userId;
     private String email;
     private String password;
     private boolean isEnabled;

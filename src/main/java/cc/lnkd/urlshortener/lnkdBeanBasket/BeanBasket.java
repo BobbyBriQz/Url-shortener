@@ -2,6 +2,7 @@ package cc.lnkd.urlshortener.lnkdBeanBasket;
 
 import cc.lnkd.urlshortener.db.DBConfig;
 import cc.lnkd.urlshortener.jwt.JwtConfig;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -31,5 +32,7 @@ public class BeanBasket {
         //10 is the strength of the password encoder
         return new BCryptPasswordEncoder(10);
     }
+
+    //ObjectMapper already has a bean provided by Spring boot, no need for custom bean
 
 }

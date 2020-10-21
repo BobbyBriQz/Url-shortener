@@ -1,12 +1,13 @@
 package cc.lnkd.urlshortener.jwt;
 
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
+import cc.lnkd.urlshortener.auth.LnkdUserDetails;
+import io.jsonwebtoken.*;
+import io.jsonwebtoken.impl.DefaultClaims;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -18,8 +19,6 @@ public class JwtUtil {
     @Autowired
     JwtConfig jwtConfig;
 
-
-
     public String extractUsername(String token) {
         return extractClaim(token, Claims::getSubject);
     }
@@ -28,21 +27,49 @@ public class JwtUtil {
         return extractClaim(token, Claims::getExpiration);
     }
 
-    public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
-        final Claims claims = extractAllClaims(token);
-        return claimsResolver.apply(claims);
-    }
-    private Claims extractAllClaims(String token) {
-        return Jwts.parser().setSigningKey(jwtConfig.getSecretKey()).parseClaimsJws(token).getBody();
+    //Bobby wrote this!
+    public int extractUserId(String token){
+        return (int) extractAllClaims(token).get("userId");
     }
 
-    private Boolean isTokenExpired(String token) {
-        return extractExpiration(token).before(new Date());
+
+    public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
+        final Claims claims = extractAllClaims(token);
+        if (claims != null)
+            return claimsResolver.apply(claims);
+        return null;
+    }
+
+
+    private Claims extractAllClaims(String token) {
+        Claims claims = null;
+        try {
+            claims = Jwts.parser().setSigningKey(jwtConfig.getSecretKey()).parseClaimsJws(token).getBody();
+        }catch (SignatureException ex){
+            System.out.println("Invalid JWT Signature");
+        }catch (MalformedJwtException ex){
+            System.out.println("Invalid JWT token");
+        }catch (ExpiredJwtException ex){
+            System.out.println("Expired JWT token");
+        }catch (UnsupportedJwtException ex){
+            System.out.println("Unsupported JWT exception");
+        }catch (IllegalArgumentException ex){
+            System.out.println("Jwt claims string is empty");
+        }
+        return claims;
+    }
+
+    public Boolean isTokenExpired(String token) {
+        if(extractClaim(token, Claims::getExpiration)!= null)
+            return extractClaim(token, Claims::getExpiration).before(new Date());
+
+        return true; //i.e Token has expired
     }
 
     public String generateToken(UserDetails userDetails) {
-        
+
         Map<String, Object> claims = new HashMap<>();
+        claims.put("userId", ((LnkdUserDetails) userDetails).getUserId());
         claims.put("authorities", userDetails.getAuthorities());
         return createToken(claims, userDetails.getUsername());
     }

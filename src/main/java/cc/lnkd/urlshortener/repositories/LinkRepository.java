@@ -86,6 +86,8 @@ public class LinkRepository {
     }
 
     public int checkURLExistenceInDB(String url) throws SQLException {
+        int count = 0;
+
         String selectQuery = "SELECT count(url) FROM links WHERE `url` = ?";
 
         PreparedStatement preparedStatement = connection.prepareStatement(selectQuery);
@@ -94,17 +96,18 @@ public class LinkRepository {
         ResultSet resultSet = preparedStatement.executeQuery();
 
         if(resultSet.next()){
-            resultSet.close();
-            connection.close();
-            return resultSet.getInt(1);
+
+            count = resultSet.getInt(1);
         }
 
         resultSet.close();
         connection.close();
-        return 0;
+        return count;
     }
 
     public int checkSlugExistenceInDB(String slug) throws SQLException {
+        int count = 0;
+
         String selectQuery = "SELECT count(*) FROM links WHERE `slug` = ?";
 
         PreparedStatement preparedStatement = connection.prepareStatement(selectQuery);
@@ -114,14 +117,12 @@ public class LinkRepository {
 
         if(resultSet.next()){
 
-            resultSet.close();
-            connection.close();
-            return resultSet.getInt(1);
+            count = resultSet.getInt(1);
         }
 
         resultSet.close();
         connection.close();
-        return 0;
+        return count;
     }
 
     public int writeURLToDB(String url, String slug) throws SQLException{
@@ -136,9 +137,36 @@ public class LinkRepository {
 
         ResultSet rs = preparedStatement.getGeneratedKeys();
         int last_insert_id = 0;
+
         if (rs.next()) {
             last_insert_id = rs.getInt(1);
         }
+
+        preparedStatement.close();
+        connection.close();
+        return last_insert_id;
+    }
+
+    public int writeURLToDB(String url, String slug, int userId) throws SQLException{
+
+        String insertQuery = "INSERT INTO links(url,slug, user_id) values(?,?,?)";
+        PreparedStatement preparedStatement = connection.prepareStatement(insertQuery, Statement.RETURN_GENERATED_KEYS);
+
+        preparedStatement.setString(1, url);
+        preparedStatement.setString(2, slug);
+        preparedStatement.setInt(3, userId);
+
+        preparedStatement.executeUpdate();
+
+        ResultSet rs = preparedStatement.getGeneratedKeys();
+        int last_insert_id = 0;
+
+        if (rs.next()) {
+            last_insert_id = rs.getInt(1);
+        }
+
+        preparedStatement.close();
+        connection.close();
         return last_insert_id;
     }
 }

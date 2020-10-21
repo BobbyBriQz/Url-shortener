@@ -11,6 +11,7 @@ import java.util.stream.Collectors;
 
 public class LnkdUserDetails implements UserDetails {
 
+    private int userId;
     private String email;
     private String password;
     private boolean isEnabled;
@@ -23,6 +24,7 @@ public class LnkdUserDetails implements UserDetails {
         this.roles = authUser.getRoles().stream()
                 .map(SimpleGrantedAuthority::new)
                 .collect(Collectors.toList());
+        this.userId = authUser.getUserId();
     }
 
     @Override
@@ -34,6 +36,8 @@ public class LnkdUserDetails implements UserDetails {
     public String getPassword() {
         return password;
     }
+
+    public int getUserId(){ return userId;}
 
     @Override
     public String getUsername() {

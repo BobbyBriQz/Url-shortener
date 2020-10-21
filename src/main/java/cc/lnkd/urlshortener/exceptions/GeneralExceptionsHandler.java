@@ -1,6 +1,7 @@
 package cc.lnkd.urlshortener.exceptions;
 
 import cc.lnkd.urlshortener.models.response.APIResponse;
+import io.jsonwebtoken.ExpiredJwtException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -16,6 +17,12 @@ public class GeneralExceptionsHandler {
     @ExceptionHandler(BadRequestException.class)
     public ResponseEntity<APIResponse> handleOrderBadRequestException(Exception ex) {
         APIResponse error = new APIResponse(false, ex.getMessage(), null);
+        return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(ExpiredJwtException.class)
+    public ResponseEntity<APIResponse> expiredJWTException(Exception ex) {
+        APIResponse error = new APIResponse(false, "Access token has expired", null);
         return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
     }
 
