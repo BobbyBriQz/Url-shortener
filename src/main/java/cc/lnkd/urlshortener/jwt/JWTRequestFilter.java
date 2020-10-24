@@ -34,7 +34,7 @@ public class JWTRequestFilter extends OncePerRequestFilter {
     private JwtUtil jwtUtil;
 
     @Autowired
-    ObjectMapper mapper;
+    private ObjectMapper mapper;
 
 
     @Override
@@ -58,6 +58,12 @@ public class JWTRequestFilter extends OncePerRequestFilter {
             }
         }
 
+        if(jwt == null || jwt.isEmpty()){
+
+            sendEmptyAccessTokenResponse(response); //Sends error response to client/user
+            return; //Breaks from the filter chain, to prevent the request from reaching controller
+        }
+
 
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
 
@@ -78,7 +84,19 @@ public class JWTRequestFilter extends OncePerRequestFilter {
     private void sendInvalidTokenResponse(HttpServletResponse response) throws IOException {
         Map<String, Object> errorDetails = new LinkedHashMap<>();
         errorDetails.put("status", false);
-        errorDetails.put("message", "Invalid access token");
+        errorDetails.put("message", "Invalid Access Token");
+        errorDetails.put("data", null);
+
+        response.setStatus(HttpStatus.FORBIDDEN.value());
+        response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+
+        mapper.writeValue(response.getWriter(), errorDetails); //Sends error response to client/user
+    }
+
+    private void sendEmptyAccessTokenResponse(HttpServletResponse response) throws IOException {
+        Map<String, Object> errorDetails = new LinkedHashMap<>();
+        errorDetails.put("status", false);
+        errorDetails.put("message", "Access Token is required in request header");
         errorDetails.put("data", null);
 
         response.setStatus(HttpStatus.FORBIDDEN.value());

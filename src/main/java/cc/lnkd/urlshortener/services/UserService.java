@@ -6,6 +6,7 @@ import cc.lnkd.urlshortener.models.RegisteredUser;
 import cc.lnkd.urlshortener.models.request.RegistrationRequest;
 
 import javax.mail.MessagingException;
+import javax.servlet.http.HttpServletRequest;
 import java.sql.SQLException;
 
 public interface UserService {
@@ -13,5 +14,6 @@ public interface UserService {
     AuthUser getAuthUserByEmail(String email) throws SQLException;
     RegisteredUser register(RegistrationRequest registrationRequest) throws SQLException, BadRequestException, MessagingException;
     RegisteredUser getUserWithEmail(String email) throws SQLException;
+    RegisteredUser verifyUser(HttpServletRequest request, String verificationCode) throws SQLException, BadRequestException;
 
 }

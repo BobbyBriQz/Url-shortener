@@ -37,4 +37,12 @@ public class RequestValidator {
             throw new BadRequestException("Password is required");
         }
     }
+
+    public static void validateVerificationCode(String verificationCode) throws BadRequestException {
+
+        if(verificationCode == null || verificationCode.isEmpty()){
+
+            throw new BadRequestException("Verification code is required");
+        }
+    }
 }

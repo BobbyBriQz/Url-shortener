@@ -202,4 +202,72 @@ public class UserRepository {
         connection.close();
         return 0;
     }
+
+    public boolean isVerificationCodeCorrect(int id, String verificationCode) throws SQLException {
+        String selectQuery = "SELECT verification_code " +
+                "FROM users where `id` = ?";
+        PreparedStatement selectStatement = connection.prepareStatement(selectQuery);
+        selectStatement.setInt(1, id);
+
+        ResultSet selectResult = selectStatement.executeQuery();
+
+        if(selectResult.next()){
+            String verificationCodeInDB = selectResult.getString("verification_code");
+
+            selectStatement.close();
+            connection.close();
+            return verificationCode.trim().equalsIgnoreCase(verificationCodeInDB.trim());
+        }
+
+        selectStatement.close();
+        connection.close();
+        return false;
+    }
+
+    public RegisteredUser verifyUser(int id) throws SQLException {
+
+        String updateQuery = "UPDATE users " +
+                "SET verified_at = current_timestamp WHERE `id` = ?";
+        PreparedStatement updateStatement = connection.prepareStatement(updateQuery);
+        updateStatement.setInt(1, id);
+        int rowsAffected = updateStatement.executeUpdate();
+
+        if(rowsAffected> 0){
+            String selectQuery = "SELECT id, email, first_name, last_name, created_at, verified_at, enabled " +
+                    "FROM users where `id` = ?";
+            PreparedStatement selectStatement = connection.prepareStatement(selectQuery);
+            selectStatement.setInt(1, id);
+
+            ResultSet selectResult = selectStatement.executeQuery();
+
+            if(selectResult.next()){
+                int userId = selectResult.getInt("id");
+                String userEmail = selectResult.getString("email");
+                String firstName = selectResult.getString("first_name");
+                String lastName = selectResult.getString("last_name");
+                String createdAt = selectResult.getString("created_at");;
+                String verifiedAt = selectResult.getString("verified_at");
+                boolean isEnabled = selectResult.getBoolean("enabled");
+
+                RegisteredUser user = RegisteredUser.builder()
+                        .id(userId)
+                        .email(userEmail)
+                        .firstName(firstName)
+                        .lastName(lastName)
+                        .createdAt(createdAt)
+                        .verifiedAt(verifiedAt)
+                        .isEnabled(isEnabled)
+                        .build();
+
+                selectStatement.close();
+                updateStatement.close();
+                connection.close();
+                return user;
+            }
+        }
+
+        updateStatement.close();
+        connection.close();
+        return null;
+    }
 }
