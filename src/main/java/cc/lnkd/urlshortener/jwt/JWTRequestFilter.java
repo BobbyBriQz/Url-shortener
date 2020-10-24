@@ -87,5 +87,5 @@ public class JWTRequestFilter extends OncePerRequestFilter {
 
         mapper.writeValue(response.getWriter(), errorDetails); //Sends error response to client/user
     }
-    
+
 }

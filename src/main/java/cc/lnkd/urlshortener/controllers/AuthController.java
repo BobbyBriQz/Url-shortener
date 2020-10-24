@@ -40,17 +40,7 @@ public class AuthController {
 
         RequestValidator.validateAuthRequest(request);
 
-        //Todo: REFACTOR TO authService.login()
-        try {
-            authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
-            );
-        }
-        catch (BadCredentialsException e) {
-            throw new Exception("Incorrect email or password", e);
-        }
-
-        RegisteredUser user = userService.getUserWithEmail(request.getEmail());
+        RegisteredUser user = authService.login(request);
 
         final UserDetails userDetails = userDetailsService.loadUserByUsername(request.getEmail());
 
@@ -65,9 +55,8 @@ public class AuthController {
 
         RequestValidator.validateAuthRequest(request);
 
-        //Todo: REFACTOR TO authService.register()
 
-        RegisteredUser user = userService.register(request);
+        RegisteredUser user = authService.register(request);
 
         final UserDetails userDetails = userDetailsService.loadUserByUsername(request.getEmail());
 

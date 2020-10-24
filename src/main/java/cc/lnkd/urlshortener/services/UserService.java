@@ -12,7 +12,6 @@ import java.sql.SQLException;
 public interface UserService {
 
     AuthUser getAuthUserByEmail(String email) throws SQLException;
-    RegisteredUser register(RegistrationRequest registrationRequest) throws SQLException, BadRequestException, MessagingException;
     RegisteredUser getUserWithEmail(String email) throws SQLException;
     RegisteredUser verifyUser(HttpServletRequest request, String verificationCode) throws SQLException, BadRequestException;
 
