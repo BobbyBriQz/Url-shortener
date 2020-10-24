@@ -4,6 +4,7 @@ CREATE TABLE IF NOT EXISTS users(
     last_name varchar(50) null,
     email varchar(50) not null unique,
     password varchar(150) not null,
+    verification_code varchar(8) not null,
     created_at timestamp default current_timestamp,
     verified_at timestamp null,
     enabled boolean default true,

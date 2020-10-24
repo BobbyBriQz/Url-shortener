@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>lnkd.cc registration</title>
+</head>
+<body>
+
+<div >
+    <p style="text-align: center;" >
+        Hello, <span th:text="${name}"></span>.
+        Welcome to lnkd.cc
+    </p>
+
+    <p>
+        Your verification code is <b><span th:text="${verificationCode}"></span></b>.
+    </p>
+
+    <p>
+        You have been successfully subscribed to the <b>lnkd.cc</b>
+    </p>
+
+    <p>
+        Regards, <br />
+        <em>The lnkd.cc Team</em>
+    </p>
+</div>
+
+</body>
+</html>

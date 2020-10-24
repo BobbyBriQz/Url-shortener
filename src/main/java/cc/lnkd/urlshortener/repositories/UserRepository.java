@@ -1,11 +1,13 @@
 package cc.lnkd.urlshortener.repositories;
 
-import cc.lnkd.urlshortener.db.DBConfig;
+import cc.lnkd.urlshortener.configs.DBConfig;
 import cc.lnkd.urlshortener.models.AuthUser;
 import cc.lnkd.urlshortener.models.RegisteredUser;
 import cc.lnkd.urlshortener.models.request.RegistrationRequest;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.PreparedStatementCreator;
+import org.springframework.jdbc.support.GeneratedKeyHolder;
+import org.springframework.jdbc.support.KeyHolder;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -69,19 +71,31 @@ public class UserRepository {
         return null;
     }
 
-    public RegisteredUser register(RegistrationRequest request) throws SQLException {
+    public RegisteredUser register(RegistrationRequest request, String verificationCode) throws SQLException {
 
-        String insertQuery = "INSERT INTO users(first_name, last_name, email, password) " +
-                "values(?,?,?,?)";
+        /*
+        * Look into keyholders for last insert id
+        * */
+
+        String insertQuery = "INSERT INTO users(first_name, last_name, email, password, verification_code) " +
+                "values(?,?,?,?,?)";
 
         PreparedStatement preparedStatement = connection.prepareStatement(insertQuery, Statement.RETURN_GENERATED_KEYS);
 
         preparedStatement.setString(1, request.getFirstName());
         preparedStatement.setString(2, request.getLastName());
         preparedStatement.setString(3, request.getEmail());
-        preparedStatement.setString(4, request.getPassword()); //Make Sure it is the same strength as the password Encoder bean
+        preparedStatement.setString(4, request.getPassword());
+        preparedStatement.setString(5, verificationCode);
 
-        int id = preparedStatement.executeUpdate();
+        preparedStatement.executeUpdate();
+
+        ResultSet rs = preparedStatement.getGeneratedKeys(); //
+        int id = 0;
+        if (rs.next()) {
+            id = rs.getInt(1);
+        }
+        System.out.println("Generated insert key: " + id);
 
         String roleInsert = "INSERT INTO authorities(email, authority) " +
                 "values(?,?)";
@@ -110,12 +124,9 @@ public class UserRepository {
                 boolean isEnabled = selectResult.getBoolean("enabled");
 
                 RegisteredUser user = RegisteredUser.builder()
-                        .id(userId)
-                        .email(email)
-                        .firstName(firstName)
-                        .lastName(lastName)
-                        .createdAt(createdAt)
-                        .verifiedAt(verifiedAt)
+                        .id(userId).email(email)
+                        .firstName(firstName).lastName(lastName)
+                        .createdAt(createdAt).verifiedAt(verifiedAt)
                         .isEnabled(isEnabled)
                         .build();
 
@@ -153,7 +164,7 @@ public class UserRepository {
 
             RegisteredUser user = RegisteredUser.builder()
                     .id(userId)
-                    .email(email)
+                    .email(userEmail)
                     .firstName(firstName)
                     .lastName(lastName)
                     .createdAt(createdAt)

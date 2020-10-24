@@ -1,6 +1,6 @@
 package cc.lnkd.urlshortener.services.Impl;
 
-import cc.lnkd.urlshortener.db.DBConfig;
+import cc.lnkd.urlshortener.configs.DBConfig;
 import cc.lnkd.urlshortener.exceptions.BadRequestException;
 import cc.lnkd.urlshortener.jwt.JwtUtil;
 import cc.lnkd.urlshortener.models.request.LinkRequest;

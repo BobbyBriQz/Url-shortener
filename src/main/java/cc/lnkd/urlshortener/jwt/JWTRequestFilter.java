@@ -2,6 +2,7 @@ package cc.lnkd.urlshortener.jwt;
 
 import cc.lnkd.urlshortener.auth.LnkdUserDetails;
 import cc.lnkd.urlshortener.auth.LnkdUserDetailsService;
+import cc.lnkd.urlshortener.configs.EmailConfig;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jsonwebtoken.ExpiredJwtException;
 import lombok.SneakyThrows;
@@ -44,7 +45,7 @@ public class JWTRequestFilter extends OncePerRequestFilter {
         String username = null;
         String jwt = null;
 
-        System.out.println("Remote IP Address: "+request.getRemoteAddr());
+        System.out.println("Request IP Address: "+request.getRemoteAddr());
 
         if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
             jwt = authorizationHeader.substring(7);

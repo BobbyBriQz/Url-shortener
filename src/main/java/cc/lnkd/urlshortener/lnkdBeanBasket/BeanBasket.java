@@ -1,12 +1,12 @@
 package cc.lnkd.urlshortener.lnkdBeanBasket;
 
-import cc.lnkd.urlshortener.db.DBConfig;
-import cc.lnkd.urlshortener.jwt.JwtConfig;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import cc.lnkd.urlshortener.configs.DBConfig;
+import cc.lnkd.urlshortener.configs.JwtConfig;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+
 
 @Configuration
 public class BeanBasket {
@@ -34,5 +34,6 @@ public class BeanBasket {
     }
 
     //ObjectMapper already has a bean provided by Spring boot, no need for custom bean
+
 
 }

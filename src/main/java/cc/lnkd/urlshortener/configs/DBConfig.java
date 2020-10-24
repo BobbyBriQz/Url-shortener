@@ -1,4 +1,4 @@
-package cc.lnkd.urlshortener.db;
+package cc.lnkd.urlshortener.configs;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;
