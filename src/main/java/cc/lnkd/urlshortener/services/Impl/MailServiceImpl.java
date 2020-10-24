@@ -45,26 +45,17 @@ public class MailServiceImpl implements MailService {
         javaMailSender.setUsername(emailConfig.getUsername());
         javaMailSender.setPassword(emailConfig.getPassword());
 
-
-
-
-        /*SimpleMailMessage message = new SimpleMailMessage();
-        message.setTo(to);
-        message.setSubject(subject);
-        message.setText(body);
-        message.setFrom("support@lnkd.cc");
-        javaMailSender.send(message);*/
-
         // Prepare the evaluation context
         final Context ctx = new Context(Locale.ENGLISH);
         ctx.setVariable("name", to);
         ctx.setVariable("verificationCode", verificationCode);
-
+        //ctx.setVariable("imageResourceName", imageResourceName); // so that we can reference it from HTML
 
         // Prepare message using a Spring helper
         final MimeMessage mimeMessage = this.javaMailSender.createMimeMessage();
         final MimeMessageHelper message =
                 new MimeMessageHelper(mimeMessage, true, "UTF-8"); // true = multipart
+
         message.setSubject("Welcome to Lnkd.cc");
         message.setFrom("support@lnkd.cc");
         message.setTo(to);
@@ -73,11 +64,52 @@ public class MailServiceImpl implements MailService {
         final String htmlContent = this.templateEngine.process("html/registrationMail.html", ctx);
         message.setText(htmlContent, true); // true = isHtml
 
+        /*
+        // Add the inline image, referenced from the HTML code as "cid:${imageResourceName}"
+        final InputStreamSource imageSource = new ByteArrayResource(imageBytes);
+        message.addInline(imageResourceName, imageSource, imageContentType);
+        */
 
         // Send mail
         this.javaMailSender.send(mimeMessage);
+    }
 
+    @Override
+    @Async("threadPoolTaskExecutor")
+    public void resendVerificationCode(String to, String verificationCode) throws MessagingException {
 
+        javaMailSender.setHost(emailConfig.getHost());
+        javaMailSender.setPort(emailConfig.getPort());
+        javaMailSender.setUsername(emailConfig.getUsername());
+        javaMailSender.setPassword(emailConfig.getPassword());
+
+        // Pass the values you want to access in ThymeLeaf html
+        final Context ctx = new Context(Locale.ENGLISH);
+        ctx.setVariable("name", to);
+        ctx.setVariable("verificationCode", verificationCode);
+        //ctx.setVariable("imageResourceName", imageResourceName); // so that we can reference it from HTML
+
+        // Prepare message using a Spring helper
+        final MimeMessage mimeMessage = this.javaMailSender.createMimeMessage();
+        final MimeMessageHelper message =
+                new MimeMessageHelper(mimeMessage, true, "UTF-8"); // true = multipart
+
+        message.setSubject("Lnkd.cc Verification Code");
+        message.setFrom("support@lnkd.cc");
+        message.setTo(to);
+
+        // Create the HTML body using Thymeleaf
+        final String htmlContent = this.templateEngine.process("html/verificationMail.html", ctx);
+        message.setText(htmlContent, true); // true = isHtml
+
+        /*
+        // Add the inline image, referenced from the HTML code as "cid:${imageResourceName}"
+        final InputStreamSource imageSource = new ByteArrayResource(imageBytes);
+        message.addInline(imageResourceName, imageSource, imageContentType);
+        */
+
+        // Send mail
+        this.javaMailSender.send(mimeMessage);
     }
 
 }

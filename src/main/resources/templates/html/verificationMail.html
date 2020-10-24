@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>lnkd.cc verification</title>
+</head>
+<body>
+
+<div >
+    <p style="text-align: center;" >
+        Hello, <span th:text="${name}"></span>.
+    </p>
+
+    <p>
+        Your requested verification code is <b><span th:text="${verificationCode}"></span></b>.
+    </p>
+
+
+    <p>
+        Regards, <br />
+        <em>The lnkd.cc Team</em>
+    </p>
+</div>
+
+</body>
+</html>

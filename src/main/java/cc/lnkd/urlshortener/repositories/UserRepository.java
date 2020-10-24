@@ -182,7 +182,26 @@ public class UserRepository {
         return null;
     }
 
-    public int doesEmailAlreadyExist(String email) throws SQLException {
+    public String getVerificationCodeByEmail(String email) throws SQLException {
+        String selectQuery = "SELECT verification_code " +
+                "FROM users where `email` = ?";
+        PreparedStatement selectStatement = connection.prepareStatement(selectQuery);
+        selectStatement.setString(1, email);
+
+        ResultSet selectResult = selectStatement.executeQuery();
+
+        String verificationCode = null;
+
+        if(selectResult.next()){
+            verificationCode = selectResult.getString("verification_code");
+        }
+
+        selectStatement.close();
+        connection.close();
+        return verificationCode;
+    }
+
+    public boolean doesEmailAlreadyExist(String email) throws SQLException {
         String selectQuery = "SELECT count(email) as email_count " +
                 "FROM users where `email` = ?";
         PreparedStatement selectStatement = connection.prepareStatement(selectQuery);
@@ -190,17 +209,14 @@ public class UserRepository {
 
         ResultSet selectResult = selectStatement.executeQuery();
 
+        int emailCount = 0;
         if(selectResult.next()){
-            int emailCount = selectResult.getInt("email_count");
-
-            selectStatement.close();
-            connection.close();
-            return emailCount;
+            emailCount = selectResult.getInt("email_count");
         }
 
         selectStatement.close();
         connection.close();
-        return 0;
+        return emailCount > 0;
     }
 
     public boolean isVerificationCodeCorrect(int id, String verificationCode) throws SQLException {

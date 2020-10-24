@@ -7,6 +7,7 @@ import cc.lnkd.urlshortener.models.response.APIResponse;
 import cc.lnkd.urlshortener.models.request.LoginRequest;
 import cc.lnkd.urlshortener.models.response.LoginResponse;
 import cc.lnkd.urlshortener.models.response.RegistrationResponse;
+import cc.lnkd.urlshortener.services.AuthService;
 import cc.lnkd.urlshortener.services.UserService;
 import cc.lnkd.urlshortener.validations.RequestValidator;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,10 +18,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 
 @RestController
@@ -29,7 +27,7 @@ public class AuthController {
 
     @Autowired UserService userService;
 
-    @Autowired PasswordEncoder passwordEncoder;
+    @Autowired AuthService authService;
 
     @Autowired private AuthenticationManager authenticationManager;
 
@@ -42,6 +40,7 @@ public class AuthController {
 
         RequestValidator.validateAuthRequest(request);
 
+        //Todo: REFACTOR TO authService.login()
         try {
             authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
@@ -66,12 +65,9 @@ public class AuthController {
 
         RequestValidator.validateAuthRequest(request);
 
-        request.setPassword(passwordEncoder.encode(request.getPassword()));
+        //Todo: REFACTOR TO authService.register()
 
         RegisteredUser user = userService.register(request);
-        if (user == null){
-            throw new Exception("User could not be created");
-        }
 
         final UserDetails userDetails = userDetailsService.loadUserByUsername(request.getEmail());
 
@@ -81,6 +77,15 @@ public class AuthController {
     }
 
 
+    @GetMapping("/resend-verification-code")
+    ResponseEntity<APIResponse> resendVerificationCode(@RequestParam("email") String email) throws Exception {
+
+        RequestValidator.validateStringParam(email);
+
+        authService.resendVerificationCode(email);
+
+        return ResponseEntity.ok(new APIResponse(true, "User Verification code resent Successfully", null));
+    }
 
 
 }

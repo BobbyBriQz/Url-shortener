@@ -38,7 +38,7 @@ public class RequestValidator {
         }
     }
 
-    public static void validateVerificationCode(String verificationCode) throws BadRequestException {
+    public static void validateStringParam(String verificationCode) throws BadRequestException {
 
         if(verificationCode == null || verificationCode.isEmpty()){
 

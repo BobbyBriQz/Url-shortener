@@ -2,9 +2,7 @@ package cc.lnkd.urlshortener.controllers;
 
 import cc.lnkd.urlshortener.exceptions.BadRequestException;
 import cc.lnkd.urlshortener.models.RegisteredUser;
-import cc.lnkd.urlshortener.models.request.LinkRequest;
 import cc.lnkd.urlshortener.models.response.APIResponse;
-import cc.lnkd.urlshortener.models.response.LinkResponse;
 import cc.lnkd.urlshortener.services.UserService;
 import cc.lnkd.urlshortener.validations.RequestValidator;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,9 +21,9 @@ public class UserController {
     UserService userService;
 
     @GetMapping("/verify")
-    public ResponseEntity<APIResponse> verifyUser(HttpServletRequest request, @RequestParam String verificationCode) throws BadRequestException, SQLException {
+    public ResponseEntity<APIResponse> verifyUser(HttpServletRequest request, @RequestParam("verificationCode") String verificationCode) throws BadRequestException, SQLException {
 
-        RequestValidator.validateVerificationCode(verificationCode);
+        RequestValidator.validateStringParam(verificationCode);
 
         RegisteredUser registeredUser = userService.verifyUser(request, verificationCode);
 

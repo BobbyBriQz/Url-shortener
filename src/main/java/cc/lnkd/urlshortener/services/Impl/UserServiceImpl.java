@@ -10,6 +10,7 @@ import cc.lnkd.urlshortener.repositories.UserRepository;
 import cc.lnkd.urlshortener.services.MailService;
 import cc.lnkd.urlshortener.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import javax.mail.MessagingException;
@@ -29,6 +30,10 @@ public class UserServiceImpl implements UserService {
     @Autowired
     JwtUtil jwtUtil;
 
+    @Autowired
+    PasswordEncoder passwordEncoder;
+
+
     @Override
     public AuthUser getAuthUserByEmail(String email) throws SQLException {
         return new UserRepository(dbConfig).getAuthUserByEmail(email);
@@ -40,8 +45,14 @@ public class UserServiceImpl implements UserService {
             throw new BadRequestException("Email '" +request.getEmail()+ "' has already been registered");
         }
 
+        request.setPassword(passwordEncoder.encode(request.getPassword()));
+
         String verificationCode = generateVerificationCode();
         RegisteredUser registeredUser = new UserRepository(dbConfig).register(request, verificationCode);
+
+        if (registeredUser == null){
+            throw new BadRequestException("User could not be created");
+        }
 
         mailService.sendWelcomeEmail(registeredUser.getEmail(), verificationCode);
 
@@ -72,9 +83,8 @@ public class UserServiceImpl implements UserService {
 
 
     public boolean emailAlreadyExists(String email) throws SQLException {
-        int emailCount= new UserRepository(dbConfig).doesEmailAlreadyExist(email);
 
-        return emailCount > 0;
+        return new UserRepository(dbConfig).doesEmailAlreadyExist(email);
     }
 
     public String generateVerificationCode() {
