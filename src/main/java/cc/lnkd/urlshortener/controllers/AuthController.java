@@ -1,23 +1,14 @@
 package cc.lnkd.urlshortener.controllers;
 
-import cc.lnkd.urlshortener.jwt.JwtUtil;
-import cc.lnkd.urlshortener.models.RegisteredUser;
 import cc.lnkd.urlshortener.models.request.RegistrationRequest;
 import cc.lnkd.urlshortener.models.response.APIResponse;
 import cc.lnkd.urlshortener.models.request.LoginRequest;
 import cc.lnkd.urlshortener.models.response.LoginResponse;
 import cc.lnkd.urlshortener.models.response.RegistrationResponse;
 import cc.lnkd.urlshortener.services.AuthService;
-import cc.lnkd.urlshortener.services.UserService;
 import cc.lnkd.urlshortener.validations.RequestValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 
@@ -25,29 +16,17 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/v1/auth")
 public class AuthController {
 
-    @Autowired UserService userService;
-
     @Autowired AuthService authService;
 
-    @Autowired private AuthenticationManager authenticationManager;
-
-    @Autowired private JwtUtil jwtTokenUtil;
-
-    @Autowired private UserDetailsService userDetailsService;
 
     @PostMapping("/login")
     ResponseEntity<APIResponse> login(@RequestBody LoginRequest request) throws Exception {
 
         RequestValidator.validateAuthRequest(request);
 
-        RegisteredUser user = authService.login(request);
+        LoginResponse response = authService.login(request);
 
-        final UserDetails userDetails = userDetailsService.loadUserByUsername(request.getEmail());
-
-        final String jwt = jwtTokenUtil.generateToken(userDetails);
-
-        return ResponseEntity.ok(new APIResponse(true, "Login Successful", new LoginResponse(user, jwt)));
-
+        return ResponseEntity.ok(new APIResponse(true, "Login Successful", response));
     }
 
     @PostMapping("/register")
@@ -55,14 +34,9 @@ public class AuthController {
 
         RequestValidator.validateAuthRequest(request);
 
+        RegistrationResponse response = authService.register(request);
 
-        RegisteredUser user = authService.register(request);
-
-        final UserDetails userDetails = userDetailsService.loadUserByUsername(request.getEmail());
-
-        final String jwt = jwtTokenUtil.generateToken(userDetails);
-
-        return ResponseEntity.ok(new APIResponse(true, "User Registered Successfully", new RegistrationResponse(user, jwt)));
+        return ResponseEntity.ok(new APIResponse(true, "User Registered Successfully", response));
     }
 
 
@@ -76,5 +50,14 @@ public class AuthController {
         return ResponseEntity.ok(new APIResponse(true, "User Verification code resent Successfully", null));
     }
 
+    @GetMapping("/password-reset")
+    ResponseEntity<APIResponse> passwordReset(@RequestParam("email") String email) throws Exception {
+
+        RequestValidator.validateStringParam(email);
+
+        authService.passwordReset(email);
+
+        return ResponseEntity.ok(new APIResponse(true, "Password reset Successfully", null));
+    }
 
 }

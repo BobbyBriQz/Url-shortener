@@ -286,4 +286,20 @@ public class UserRepository {
         connection.close();
         return null;
     }
+
+    public int updateUserPassword(String email, String password) throws SQLException {
+
+        String updateQuery = "UPDATE users SET password = ? " +
+                "WHERE email = ?";
+
+        PreparedStatement updateStatement = connection.prepareStatement(updateQuery);
+        updateStatement.setString(1, password);
+        updateStatement.setString(2, email);
+
+        int rowsAffected = updateStatement.executeUpdate();
+
+        updateStatement.close();
+        connection.close();
+        return rowsAffected;
+    }
 }

@@ -36,14 +36,18 @@ public class MailServiceImpl implements MailService {
     @Autowired
     TemplateEngine templateEngine;
 
-    @Override
-    @Async("threadPoolTaskExecutor")
-    public void sendWelcomeEmail(String to, String verificationCode) throws MessagingException {
-
+    private void configureMailsSender() {
         javaMailSender.setHost(emailConfig.getHost());
         javaMailSender.setPort(emailConfig.getPort());
         javaMailSender.setUsername(emailConfig.getUsername());
         javaMailSender.setPassword(emailConfig.getPassword());
+    }
+
+    @Override
+    @Async("threadPoolTaskExecutor")
+    public void sendWelcomeEmail(String to, String verificationCode) throws MessagingException {
+
+        configureMailsSender();
 
         // Prepare the evaluation context
         final Context ctx = new Context(Locale.ENGLISH);
@@ -74,14 +78,12 @@ public class MailServiceImpl implements MailService {
         this.javaMailSender.send(mimeMessage);
     }
 
+
     @Override
     @Async("threadPoolTaskExecutor")
     public void resendVerificationCode(String to, String verificationCode) throws MessagingException {
 
-        javaMailSender.setHost(emailConfig.getHost());
-        javaMailSender.setPort(emailConfig.getPort());
-        javaMailSender.setUsername(emailConfig.getUsername());
-        javaMailSender.setPassword(emailConfig.getPassword());
+        configureMailsSender();
 
         // Pass the values you want to access in ThymeLeaf html
         final Context ctx = new Context(Locale.ENGLISH);
@@ -100,6 +102,39 @@ public class MailServiceImpl implements MailService {
 
         // Create the HTML body using Thymeleaf
         final String htmlContent = this.templateEngine.process("html/verificationMail.html", ctx);
+        message.setText(htmlContent, true); // true = isHtml
+
+        /*
+        // Add the inline image, referenced from the HTML code as "cid:${imageResourceName}"
+        final InputStreamSource imageSource = new ByteArrayResource(imageBytes);
+        message.addInline(imageResourceName, imageSource, imageContentType);
+        */
+
+        // Send mail
+        this.javaMailSender.send(mimeMessage);
+    }
+
+    @Override
+    public void sendPasswordChangeEmail(String email, String resetPassword) throws MessagingException {
+        configureMailsSender();
+
+        // Pass the values you want to access in ThymeLeaf html
+        final Context ctx = new Context(Locale.ENGLISH);
+        ctx.setVariable("name", email);
+        ctx.setVariable("password", resetPassword);
+        //ctx.setVariable("imageResourceName", imageResourceName); // so that we can reference it from HTML
+
+        // Prepare message using a Spring helper
+        final MimeMessage mimeMessage = this.javaMailSender.createMimeMessage();
+        final MimeMessageHelper message =
+                new MimeMessageHelper(mimeMessage, true, "UTF-8"); // true = multipart
+
+        message.setSubject("Lnkd.cc Password Reset");
+        message.setFrom("support@lnkd.cc");
+        message.setTo(email);
+
+        // Create the HTML body using Thymeleaf
+        final String htmlContent = this.templateEngine.process("html/passwordResetMail.html", ctx);
         message.setText(htmlContent, true); // true = isHtml
 
         /*

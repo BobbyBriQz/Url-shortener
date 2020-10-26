@@ -7,4 +7,6 @@ public interface MailService {
     void sendWelcomeEmail(String to, String verificationCode) throws MessagingException;
 
     void resendVerificationCode(String email, String verificationCode) throws MessagingException;
+
+    void sendPasswordChangeEmail(String email, String resetPassword) throws MessagingException;
 }
